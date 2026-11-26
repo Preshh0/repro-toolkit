@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reproducible AI Research Checklist + MOF Classifier</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E✅%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f7f6f2;--surface:#fff;--text:#1d2126;--muted:#5e6670;--line:#dcdad2;--accent:#1f6f5c;--accent-soft:#dff0ea;--warn:#a65d00;--warn-soft:#fbefd9;box-sizing:border-box}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181b;--surface:#1e2226;--text:#e7e9ea;--muted:#9aa3ab;--line:#31383e;--accent:#4cc3a3;--accent-soft:#1c3a33;--warn:#e8a54a;--warn-soft:#3a2d17}}
+:root[data-theme="dark"]{--bg:#15181b;--surface:#1e2226;--text:#e7e9ea;--muted:#9aa3ab;--line:#31383e;--accent:#4cc3a3;--accent-soft:#1c3a33;--warn:#e8a54a;--warn-soft:#3a2d17}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:150px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:9;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px}
+.wrap{max-width:780px;margin:0 auto}
+h1{font-size:1.15rem;margin:0 0 8px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;padding:8px;font-weight:600}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:8px;font-size:.9rem;color:var(--muted)}
+.row b{color:var(--text)}
+input[type=text]{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0;flex:1 1 160px}
+button{font:inherit;font-size:.88rem;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+main{padding:16px}
+.banner{border:1px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.banner.none{border-color:var(--warn);background:var(--warn-soft)}
+.banner h2{margin:0 0 4px;font-size:1.05rem}
+.banner p{margin:2px 0;font-size:.9rem}
+section{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden}
+section h2{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0;padding:12px 14px;font-size:1rem;border-bottom:1px solid var(--line)}
+section h2 span{font-size:.8rem;font-weight:500;color:var(--muted);white-space:nowrap}
+section.done h2 span{color:var(--accent)}
+.note{padding:8px 14px;font-size:.82rem;color:var(--muted);border-bottom:1px solid var(--line)}
+label.item{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-top:1px solid var(--line);cursor:pointer}
+h2+label.item,.note+label.item{border-top:0}
+label.item:hover{background:var(--accent-soft)}
+input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--accent)}
+label.item small{display:block;color:var(--muted);font-size:.82rem}
+label.item small.fix{color:var(--warn)}
+label.on .t{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.id{color:var(--muted);font-variant-numeric:tabular-nums;margin-right:6px;font-size:.85rem}
+.tag{font-size:.7rem;border:1px solid var(--line);border-radius:10px;padding:0 6px;margin-left:6px;color:var(--muted);vertical-align:1px}
+#out{display:none;margin:0 16px 24px}
+#out textarea{width:100%;height:240px;font:.85rem/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px}
+.msg{color:var(--accent);font-size:.85rem;margin-left:8px}
+footer{max-width:780px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:.82rem}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.9rem;background:var(--surface)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:6px 0 0;color:var(--muted);font-size:.82rem}
+.drop #scanres{color:var(--text)}
+.chip{font-size:.72rem;border-radius:10px;padding:1px 8px;margin-left:6px;white-space:nowrap;border:1px solid var(--line)}
+.chip.ok{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.chip.part{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.chip.no{color:var(--muted)}
+.clsrow{display:flex;gap:10px;align-items:center;padding:8px 14px;border-top:1px solid var(--line);font-size:.9rem}
+.clsrow span{flex:0 0 190px}.clsrow b{flex:0 0 44px;text-align:right}
+.mbar{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--accent)}
+.step{padding:10px 14px;border-top:1px solid var(--line)}
+.step small{display:block;color:var(--muted);font-size:.86rem;margin-top:2px}
+h2+.step{border-top:0}
+details.ev{border-top:1px solid var(--line)}
+details.ev summary{padding:9px 14px;cursor:pointer}
+.evb{padding:0 14px 10px}.evb small{color:var(--muted)}
+.evb blockquote{margin:6px 0 0;padding:6px 10px;border-left:3px solid var(--accent);background:var(--accent-soft);font-size:.82rem;word-break:break-word}
+.note2{color:var(--muted);font-size:.85rem;margin:-6px 2px 14px}
+#doc-paste{width:100%;margin:8px 0;font:inherit;font-size:.85rem;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px}
+.drop details{margin-top:8px;font-size:.85rem}
+.sub{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:10px 0 2px}
+ul.miss{margin:6px 0 0;padding-left:20px;font-size:.86rem}ul.miss li{margin:2px 0}
+.evb label.item{padding-left:0;padding-right:0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Reproducible AI Research Toolkit</h1>
+  <div class="tabs"><button id="t-mof">Class &amp; checklist</button><button id="t-chk">Checklist only</button></div>
+  <div class="bar"><i id="fill"></i></div>
+  <div class="row">
+    <span id="stat"></span>
+    <label id="corewrap" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="core" style="width:16px;height:16px;margin:0"> Focus on results only</label>
+    <input type="text" id="name" placeholder="Project name (for the export)" aria-label="Project name">
+    <button id="export" class="primary">Export</button>
+    <button id="reset">Reset</button>
+    <button id="theme" aria-label="Toggle theme">◐</button>
+  </div>
+</div></header>
+<main><div class="wrap">
+  <div id="scan" class="drop">
+    <b>Assess your work</b> — drop a project folder, a .zip, or a document (.pdf, .docx, .txt, .md, .tex, .html, .ipynb) here, or
+    <button id="pick-dir">Choose folder</button> <button id="pick-zip">Choose .zip</button> <button id="doc-pick">Choose document</button>
+    <p>Analysed in your browser; nothing is uploaded. The checklist and the class are worked out together: each component needs to be released or documented <i>and</i> have its supporting checklist items done. Items that only a person can judge are tickable below.</p>
+    <details><summary>…or paste document text instead</summary>
+      <textarea id="doc-paste" rows="6" placeholder="Paste the paper, README or report text here"></textarea>
+      <button id="doc-paste-go">Assess pasted text</button></details>
+    <p id="scanres"></p>
+    <p id="docmsg"></p>
+    <input type="file" id="in-dir" webkitdirectory multiple hidden><input type="file" id="in-zip" accept=".zip" hidden>
+    <input type="file" id="in-doc" hidden accept=".pdf,.docx,.txt,.md,.markdown,.tex,.rst,.html,.htm,.ipynb,.json,.csv,.yaml,.yml,.toml,.bib">
+  </div>
+  <div id="list"></div>
+</div></main>
+<div id="out" class="wrap">
+  <textarea id="md" readonly></textarea>
+  <div style="margin-top:8px"><button id="copy">Copy Markdown</button><span class="msg" id="msg"></span></div>
+</div>
+<footer>Progress is saved in this browser only. Adapt the checklist to your project, and have a teammate review it before submission. The MOF tab follows the Model Openness Framework classes (III, II, I); each component should also carry an open licence.</footer>
+
+<script>
+var CHK=[
+["1","Research Question",[
+ ["1.1","The question is specific and answerable — not a broad topic",1],
+ ["1.2","Success metric defined before any training begins",0],
+ ["1.3","Scope is bounded: time period, geography, or population is stated",0],
+ ["1.4","A null, negative result, or error would also be documented and shared",1]]],
+["2","Data Provenance",[
+ ["2.1","Data source and collection method are documented",1],
+ ["2.2","Date range and dataset version are recorded",1],
+ ["2.3","Inclusion and exclusion criteria are written down",1],
+ ["2.4","Licence or terms of use are confirmed before use",1],
+ ["2.5","Preprocessing steps are recorded, not just described",1]]],
+["3","Documentation",[
+ ["3.1","README covers: what the project is, why it exists, and how to run it",1],
+ ["3.2","Column names, units, and label definitions are explained",1],
+ ["3.3","Known limitations are stated honestly",1],
+ ["3.4","Bias checks have been performed and documented",1],
+ ["3.5","Documentation is written for someone with no prior context","Ask: could a new team member run this in one day?"]]],
+["4","Experiment Record",[
+ ["4.1","Seed — fixed and logged in the config file",1],
+ ["4.2","Commit — code version or commit ID recorded per run",1],
+ ["4.3","Data snapshot — tagged or versioned, not just a file path",1],
+ ["4.4","Hyperparameters — all saved in a config file, not hardcoded",1],
+ ["4.5","Environment — software stack exported (conda env export or pip freeze)",1],
+ ["4.6","Metric — definition is unambiguous and lives in the code",1]]],
+["5","Honest Reporting",[
+ ["5.1","Tuning procedure is described fully: grid size, folds, and timing",1],
+ ["5.2","Reported metric matches the evaluation protocol exactly",1],
+ ["5.3","Test set was evaluated only once, after all decisions were made",1],
+ ["5.4","Variance across seeds reported where feasible",1],
+ ["5.5","Negative results and failure cases are noted",1]]],
+["6","Privacy and Sharing",[
+ ["6.1","Re-identification risk assessed for all data fields",1],
+ ["6.2","Consent or licence is in place before sharing",1],
+ ["6.3","Sharing strategy is consistent with the assessed risk level",1],
+ ["6.4","Code is released under an explicit open licence",1],
+ ["6.5","Sensitive fields are redacted, aggregated, or replaced with synthetic data",1]]],
+["7","Release Package",[
+ ["7.1","Source code is in a version-controlled repository",1],
+ ["7.2","Data pointer included: URL, DOI, or access instructions",1],
+ ["7.3","A single entry-point script reproduces the main result","Aim: a reviewer can verify in three commands or fewer"],
+ ["7.4","Environment specification file is included",1],
+ ["7.5","Random seed is hard-coded or in the config",1],
+ ["7.6","One honest limitation statement is written for reviewers",1]]],
+["8","Process and Culture",[
+ ["8.1","Decisions are logged as they are made, not reconstructed afterwards",1],
+ ["8.2","A collaborator can reproduce the result without asking you",1],
+ ["8.3","Reproducibility is treated as part of done, not a final clean-up",1],
+ ["8.4","Trade-offs and constraints are documented, not hidden",1],
+ ["8.5","This checklist has been reviewed by a team member before submission",1],
+ ["8.6","The checklist has been adapted to the specific needs of this project",1]]]
+];
+// third field: 1 = in the focus-on-results list, 0 = full list only, string = hint (also in both)
+// MOF: [id, component, optional(1/0), how to improve]
+var MOF=[
+["III","Open Model",[
+ ["III.1","Model Architecture",0,"Describe the architecture in the model card, or include the model definition code or config."],
+ ["III.2","Model Parameters (final checkpoint)",0,"Publish the final weights (file or hub/DOI link) with a licence."],
+ ["III.3","Technical Report or Research Paper",0,"Write up the method and results (paper folder, PDF, or complete REPORT.md)."],
+ ["III.4","Evaluation Results",0,"Save result tables/logs; report the metric with mean ± std over seeds."],
+ ["III.5","Model Card",0,"Complete the model card: intended use, evaluation, limitations, no TODOs left."],
+ ["III.6","Data Card",0,"Complete the data card: source, version, licence, columns, bias checks, pointer."],
+ ["III.7","Sample Model Outputs",1,"Optional: add representative outputs, including failure cases."]]],
+["II","Open Tooling",[
+ ["II.2","Training, Validation, and Testing Code",0,"Release the training script and the code that creates the splits."],
+ ["II.3","Inference Code",0,"Add a script that loads the final checkpoint and runs it on new input."],
+ ["II.4","Evaluation Code",0,"Add an evaluate script that reproduces the reported results from the checkpoint."],
+ ["II.5","Evaluation Data",0,"Ship the evaluation/test split, or link it with its licence."],
+ ["II.6","Supporting Libraries & Tools",0,"Pin dependencies (requirements.txt, environment.yml, or Dockerfile)."]]],
+["I","Open Science",[
+ ["I.2","Research Paper",0,"Provide the full paper (source or PDF, or an arXiv/DOI link)."],
+ ["I.3","Datasets",0,"Release the training, validation, and test datasets, or a stable URL/DOI."],
+ ["I.4","Data Preprocessing Code",0,"Release the script that turns raw data into the training data."],
+ ["I.5","Model Parameters (intermediate checkpoints)",0,"Save and publish checkpoints from during training (e.g. every N steps)."],
+ ["I.6","Model Metadata",1,"Optional: machine-readable metadata (e.g. Croissant) for model, data, and training."]]]
+];
+var LABEL={"III":"Class III · Open Model","II":"Class II · Open Tooling","I":"Class I · Open Science"};
+var KEY="repro-site-v1", S={checked:{},core:false,name:"",theme:"",tab:"mof",scan:null,doc:null};
+try{var raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+if(S.tab==='doc')S.tab='mof';if(S.doc&&!S.doc.sc)S.doc=null;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function $(id){return document.getElementById(id)}
+function inCore(it){return it[2]!==0}
+function hint(it){return typeof it[2]==="string"?it[2]:""}
+function visible(){return CHK.map(function(s){return[s[0],s[1],s[2].filter(function(i){return!S.core||inCore(i)})]}).filter(function(s){return s[2].length})}
+function applyTheme(){if(S.theme)document.documentElement.setAttribute("data-theme",S.theme);else document.documentElement.removeAttribute("data-theme")}
+/* ---------- unified model: checklist items feed MOF components, components make the class ---------- */
+var HOME={"4.4":"III.1","6.2":"III.2","6.4":"II.2",
+"1.1":"III.3","1.2":"III.3","1.3":"III.3","1.4":"III.3","5.1":"III.3","5.5":"III.3","8.1":"III.3","8.4":"III.3","3.5":"III.3",
+"4.6":"II.4","5.2":"III.4","5.3":"III.4","5.4":"III.4",
+"3.1":"III.5","3.3":"III.5","3.4":"III.5","7.6":"III.5",
+"2.1":"III.6","2.2":"III.6","2.3":"III.6","2.4":"III.6","3.2":"III.6","6.1":"III.6",
+"4.1":"II.2","4.2":"II.2","7.1":"II.2","7.5":"II.2",
+"7.3":"II.4","8.2":"II.4","6.3":"II.5","7.2":"II.5","4.5":"II.6","7.4":"II.6",
+"8.3":"I.2","8.5":"I.2","8.6":"I.2","4.3":"I.3","6.5":"I.3","2.5":"I.4"};
+var SUP={};Object.keys(HOME).forEach(function(k){(SUP[HOME[k]]=SUP[HOME[k]]||[]).push(k)});
+function vcmp(a,b){var x=a.split("."),y=b.split(".");return(+x[0]-+y[0])||(+x[1]-+y[1])}
+Object.keys(SUP).forEach(function(k){SUP[k].sort(vcmp)});
+var ITEM={};CHK.forEach(function(s){s[2].forEach(function(i){ITEM[i[0]]=i[1]})});
+var COMP={};MOF.forEach(function(c){c[2].forEach(function(i){COMP[i[0]]={name:i[1],opt:!!i[2],fix:i[3]}})});
+function srcScore(id){var v=S.checked[id]?1:0;if(S.scan&&S.scan.auto[id])v=1;if(S.doc&&S.doc.sc&&S.doc.sc[id])v=Math.max(v,S.doc.sc[id][0]);return v}
+function docInfo(id){return S.doc&&S.doc.sc&&S.doc.sc[id]||null}
+function isauto(id){var d=docInfo(id);return!!(S.scan&&S.scan.auto[id])||!!(d&&d[0]>=1)}
+function ison(id){return srcScore(id)>=1}
+function scanHint(id){if(ison(id))return"";if(S.scan&&S.scan.hints&&S.scan.hints[id])return S.scan.hints[id];var d=docInfo(id);return d?d[2]:""}
+function evalComp(id){var items=SUP[id]||[],d=srcScore(id),sup=null;
+  if(items.length)sup=items.reduce(function(a,k){return a+srcScore(k)},0)/items.length;
+  return{id:id,name:COMP[id].name,opt:COMP[id].opt,fix:COMP[id].fix,direct:d,sup:sup,items:items,score:sup===null?d:(d+sup)/2}}
+function evalAll(){
+  var chain=true,reached=null,classes=[],tot=0,sum=0,nextC=null;
+  MOF.forEach(function(c){
+    var comps=c[2].map(function(i){return evalComp(i[0])}),req=comps.filter(function(x){return!x.opt}),
+        s=req.reduce(function(a,x){return a+x.score},0),full=req.every(function(x){return x.score>=0.999});
+    chain=chain&&full;if(chain)reached=c[0];if(!full&&!nextC)nextC=c[0];
+    classes.push({id:c[0],comps:comps,req:req,pct:Math.round(100*s/req.length),full:full,missing:req.filter(function(x){return x.score<0.999})});
+    tot+=req.length;sum+=s});
+  return{classes:classes,reached:reached,nextC:nextC,pct:Math.round(100*sum/tot)}}
+function row(id,text,on,tag,small,smallCls){
+  var au=isauto(id),part=!on&&srcScore(id)>0;
+  return '<label class="item'+(on?' on':'')+'"><input type="checkbox" data-id="'+id+'"'+(on?' checked':'')+(au?' disabled':'')+'><div><span class="t"><span class="id">'+id+'</span>'+text+tag+(au?'<span class="tag">auto</span>':'')+(part?'<span class="tag">partial</span>':'')+'</span>'+(small?'<small class="'+(smallCls||'')+'">'+small+'</small>':'')+'</div></label>'}
+function renderChk(){
+  var tot=0,done=0,html="";
+  visible().forEach(function(s){
+    var d=s[2].filter(function(i){return ison(i[0])}).length;tot+=s[2].length;done+=d;
+    html+='<section class="'+(d===s[2].length?"done":"")+'"><h2><div>'+s[0]+' · '+s[1]+'</div><span>'+d+'/'+s[2].length+'</span></h2>';
+    s[2].forEach(function(i){html+=row(i[0],i[1],!!ison(i[0]),(!inCore(i)?'<span class="tag">full list</span>':'')+homeTag(i[0]),esc(scanHint(i[0]))||hint(i),scanHint(i[0])?"fix":"")});
+    html+='</section>';
+  });
+  $("list").innerHTML=html;
+  var p=tot?Math.round(done/tot*100):0;
+  $("fill").style.width=p+"%";$("stat").innerHTML='<b>'+done+'/'+tot+'</b> done · <b>'+p+'%</b>';
+}
+function homeTag(id){return HOME[id]?'<span class="tag">→ '+HOME[id]+'</span>':''}
+function compFix(id){var d=docInfo(id),f=typeof DOCFIX!=="undefined"&&DOCFIX[id];if(d&&f)return d[0]>0?f[1]:f[0];return COMP[id].fix}
+function todoHtml(nx){
+  var h='<section><h2><div>How to reach '+LABEL[nx.id]+'</div><span>'+nx.missing.length+' to do</span></h2>';
+  nx.missing.forEach(function(c,k){
+    var open=c.items.filter(function(i){return!ison(i)});
+    h+='<div class="step"><b>'+(k+1)+'. '+c.id+' '+c.name+'</b>'+chipFor(c.score)+'<small>'+(c.direct<1?esc(compFix(c.id)):'The component itself is in place; the supporting practices below are not complete yet.')+'</small>';
+    if(open.length)h+='<ul class="miss">'+open.map(function(i){return'<li><b>'+i+'</b> '+esc(ITEM[i])+(srcScore(i)>0?' <span class="tag">partial</span>':'')+(typeof DOCITEMS!=="undefined"&&DOCITEMS[i]?'':' <span class="tag">needs your confirmation</span>')+'</li>'}).join("")+'</ul>';
+    h+='</div>'});
+  return h+'<p class="note2" style="margin:8px 14px">Tick items in the lists below once they are done (or you can confirm them); the class updates immediately.</p></section>'}
+function renderClass(){
+  var E=evalAll(),h="",byc={},srcs=[];E.classes.forEach(function(c){byc[c.id]=c});
+  var nx=E.nextC?byc[E.nextC]:null,nm=Object.keys(S.checked).length;
+  if(S.doc)srcs.push("document “"+esc(S.doc.name)+"”");if(S.scan)srcs.push("project “"+esc(S.scan.name)+"”");if(nm)srcs.push(nm+" manual tick"+(nm>1?"s":""));
+  h+='<div class="banner'+(E.reached?'':' none')+'"><h2>'+(E.reached?LABEL[E.reached]+(E.reached==="I"?" — the highest class":" reached"):"Not yet Class III (Open Model)")+' · '+E.pct+'% overall</h2>';
+  if(!srcs.length)h+='<p>Drop a project or a document above to start, or tick items yourself. The class is worked out from the released components <i>and</i> the checklist practices behind them.</p>';
+  else{
+    if(!nx)h+='<p>Every required component and every supporting checklist item is satisfied, so this is the highest class (Class I · Open Science). To keep it: use persistent identifiers (DOIs) for every artifact, name a licence for each component, and re-check that links still work.</p>';
+    else h+='<p>'+(E.reached?'Current class: <b>'+LABEL[E.reached]+'</b>. ':'')+'Next target: <b>'+LABEL[nx.id]+'</b> ('+nx.pct+'% there; '+nx.missing.length+' required component'+(nx.missing.length>1?'s':'')+' incomplete).</p>';
+    h+='<p>Based on: '+srcs.join(", ")+'. A component counts only when it is released or documented <i>and</i> its supporting checklist items are done.</p>'}
+  h+='</div>';
+  h+='<section><h2><div>Progress by class</div><span>required components</span></h2>';
+  E.classes.forEach(function(c){h+='<div class="clsrow"><span>'+LABEL[c.id]+'</span><div class="mbar"><i style="width:'+c.pct+'%"></i></div><b>'+c.pct+'%</b></div>'});
+  h+='</section>';
+  if(nx&&srcs.length)h+=todoHtml(nx);
+  if(S.doc&&S.doc.notes&&S.doc.notes.length){h+='<section><h2><div>Notes</div></h2>';S.doc.notes.forEach(function(n){h+='<div class="step"><small>'+esc(n)+'</small></div>'});h+='</section>'}
+  E.classes.forEach(function(c){
+    h+='<section class="'+(c.full?'done':'')+'"><h2><div>'+LABEL[c.id]+'</div><span>'+c.pct+'% · '+(c.req.length-c.missing.length)+'/'+c.req.length+' complete</span></h2>';
+    if(c.id!=="III")h+='<div class="note">Includes all components of the class below.</div>';
+    c.comps.forEach(function(x){
+      var d=docInfo(x.id),on=ison(x.id),opn=nx&&nx.id===c.id&&!x.opt&&x.score<0.999;
+      h+='<details class="ev"'+(opn?' open':'')+'><summary><span class="id">'+x.id+'</span>'+x.name+(x.opt?' <span class="tag">optional</span>':'')+chipFor(x.score)+'</summary><div class="evb">';
+      h+=row(x.id,'Component is released / documented',on,'',on?'':esc((d?d[2]+' ':'')+compFix(x.id)),'fix');
+      if(d&&d[1])h+='<blockquote>'+esc(d[1])+'</blockquote>';
+      if(x.items.length){h+='<div class="sub">Supporting checklist items</div>';x.items.forEach(function(i){h+=row(i,esc(ITEM[i]),ison(i),'',esc(scanHint(i)),'fix')})}
+      h+='</div></details>'});
+    h+='</section>'});
+  $("list").innerHTML=h;
+  $("fill").style.width=E.pct+"%";
+  $("stat").innerHTML='<b>'+E.pct+'%</b> overall · <b>'+(E.reached?LABEL[E.reached]:"not yet Class III")+'</b>'}
+function render(){
+  if(S.tab==="doc")S.tab="mof";
+  var chk=S.tab==="chk";
+  $("t-chk").className=chk?"on":"";$("t-mof").className=chk?"":"on";
+  $("corewrap").style.display=chk?"flex":"none";
+  $("core").checked=S.core;$("name").value=S.name;
+  if(chk)renderChk();else renderClass();
+  renderScan();
+}
+$("list").addEventListener("change",function(e){
+  var id=e.target.getAttribute("data-id");if(!id)return;
+  if(e.target.checked)S.checked[id]=1;else delete S.checked[id];
+  save();render();
+});
+$("t-chk").onclick=function(){S.tab="chk";save();render()};
+$("t-mof").onclick=function(){S.tab="mof";save();render()};
+$("core").onchange=function(e){S.core=e.target.checked;save();render()};
+$("name").oninput=function(e){S.name=e.target.value;save()};
+$("reset").onclick=function(){if(confirm("Clear all ticks (both tabs)?")){S.checked={};S.scan=null;S.doc=null;save();render();$("out").style.display="none"}};
+$("theme").onclick=function(){
+  var dark=S.theme?S.theme==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
+  S.theme=dark?"light":"dark";save();applyTheme();
+};
+function markdown(){
+  var E=evalAll(),L=[],vs=visible(),tot=0,done=0,byc={},srcs=[];E.classes.forEach(function(c){byc[c.id]=c});
+  CHK.forEach(function(s){s[2].forEach(function(i){tot++;if(ison(i[0]))done++})});
+  if(S.doc)srcs.push("document: "+S.doc.name);if(S.scan)srcs.push("project scan: "+S.scan.name);
+  var nm=Object.keys(S.checked).length;if(nm)srcs.push(nm+" manual tick(s)");
+  L.push("# Reproducibility report"+(S.name?" — "+S.name:""),"","Date: "+new Date().toISOString().slice(0,10)+(srcs.length?" · Based on "+srcs.join("; "):""),"");
+  L.push("## "+(E.reached?LABEL[E.reached]+(E.reached==="I"?" (highest class)":""):"Not yet Class III")+" · "+E.pct+"% overall","");
+  E.classes.forEach(function(c){L.push("- "+LABEL[c.id]+": "+c.pct+"%"+(c.full?" ✔":""))});L.push("");
+  var nx=E.nextC?byc[E.nextC]:null;
+  if(nx){L.push("## How to reach "+LABEL[nx.id],"");
+    nx.missing.forEach(function(c){L.push("- [ ] "+c.id+" "+c.name+" ("+Math.round(100*c.score)+"%)"+(c.direct<1?": "+compFix(c.id):""));
+      c.items.filter(function(i){return!ison(i)}).forEach(function(i){L.push("  - [ ] "+i+" "+ITEM[i])})});L.push("")}
+  else if(srcs.length)L.push("Highest class reached: keep DOIs and licences up to date.","");
+  L.push("## Components","");
+  E.classes.forEach(function(c){L.push("### "+LABEL[c.id]);
+    c.comps.forEach(function(x){L.push("- ["+(x.score>=0.999?"x":(x.score>0?"~":" "))+"] "+x.id+" "+x.name+(x.opt?" (optional)":"")+" — "+Math.round(100*x.score)+"%");
+      x.items.forEach(function(i){L.push("  - ["+(ison(i)?"x":(srcScore(i)>0?"~":" "))+"] "+i+" "+ITEM[i])})});L.push("")});
+  L.push("## Checklist: "+done+"/"+tot+" items"+(S.core?" (focus-on-results list shown)":""),"");
+  vs.forEach(function(s){L.push("### "+s[0]+" · "+s[1]);
+    s[2].forEach(function(i){L.push("- ["+(ison(i[0])?"x":(srcScore(i[0])>0?"~":" "))+"] "+i[0]+" "+i[1]+(HOME[i[0]]?" → "+HOME[i[0]]:""))});L.push("")});
+  (S.doc&&S.doc.notes||[]).forEach(function(n){L.push("> "+n,"")});
+  return L.join("\n")}
+$("export").onclick=function(){$("md").value=markdown();var o=$("out");o.style.display="block";o.scrollIntoView({behavior:"smooth"})};
+$("copy").onclick=function(){
+  var ta=$("md"),m=$("msg");
+  function ok(){m.textContent="Copied";setTimeout(function(){m.textContent=""},1500)}
+  function fb(){ta.select();try{document.execCommand("copy")?ok():m.textContent="Select the text and copy manually"}catch(e){m.textContent="Select the text and copy manually"}}
+  try{navigator.clipboard.writeText(ta.value).then(ok,fb)}catch(e){fb()}
+};
+/* ---------- project scanner: runs entirely in the browser, nothing is uploaded ---------- */
+var SKIPD={".git":1,node_modules:1,venv:1,".venv":1,"site-packages":1,"__pycache__":1,".repro":1,"__MACOSX":1};
+var WEXT=/\.(pt|pth|safetensors|ckpt|bin|h5|onnx|gguf|pkl|joblib)$/i,INTER=/(step|epoch|iter|ckpt-?\d|checkpoint-?\d|intermediate)/i,URLISH=/https?:\/\/|doi\.org|10\.\d{4,}|arxiv/i;
+var DATAH=["Source and collection","Date range and version","Inclusion and exclusion criteria","Licence","Preprocessing","Columns and labels","Bias checks","Re-identification risk","Sharing plan","Data pointer"];
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function base(p){return p.split("/").pop()}
+function gre(g){return new RegExp("^"+g.replace(/[.+^${}()|[\]\\]/g,"\\$&").replace(/\*\*\//g,"\u0001").replace(/\*/g,"[^/]*").replace(/\u0001/g,"(?:.+/)?")+"$","i")}
+function has(P){var gs=[].slice.call(arguments,1);return gs.some(function(g){var r=gre(g);return P.paths.some(function(p){return r.test(p)})})}
+function hasDir(P){return[].slice.call(arguments,1).some(function(n){return P.paths.some(function(p){return p.indexOf(n+"/")===0&&base(p)!==".gitkeep"})})}
+function sec(P,f,h){var t=P.text[f];if(t==null)return null;var on=false,found=false,buf=[];
+  t.split(/\r?\n/).some(function(l){if(l[0]==="#"){if(on)return true;on=found=l.replace(/^#+\s*/,"").trim().toLowerCase()===h.toLowerCase();return false}if(on)buf.push(l);return false});
+  return found?buf.join("\n").replace(/<!--[\s\S]*?-->/g,"").trim():null}
+function ptr(P,f,h,url){var b=sec(P,f,h);return!!b&&b.indexOf("TODO")<0&&(!url||URLISH.test(b))}
+function wts(P){return P.paths.filter(function(p){return WEXT.test(p)})}
+function nel(P){return[].slice.call(arguments,1).some(function(n){var t=P.text[n];return t!=null&&t.split(/\r?\n/).some(function(l){l=l.trim();return l&&l[0]!=="#"})})}
+function fl(P,f,hs){var m=hs.filter(function(h){return!ptr(P,f,h)});return[!m.length,m.length?"Not detected: fill in "+f+" → "+m.map(function(x){return"“"+x+"”"}).join(", "):""]}
+function autoChk(P){
+  var c=P.cfg,L=P.latest,R="RESEARCH_QUESTION.md",D="DATA_CARD.md",r={},seeds={},led=[];
+  P.ok.forEach(function(x){(seeds[x.config_hash]=seeds[x.config_hash]||{})[x.seed]=1});
+  try{led=JSON.parse(P.text["runs/test_ledger.json"]||"[]")}catch(e){}
+  r["1.1"]=fl(P,R,["Question"]);r["1.2"]=fl(P,R,["Success metric"]);r["1.3"]=fl(P,R,["Scope"]);r["1.4"]=fl(P,R,["Null or negative result plan"]);
+  r["2.1"]=fl(P,D,["Source and collection"]);r["2.2"]=fl(P,D,["Date range and version"]);r["2.3"]=fl(P,D,["Inclusion and exclusion criteria"]);r["2.4"]=fl(P,D,["Licence"]);r["2.5"]=fl(P,D,["Preprocessing"]);
+  r["3.1"]=fl(P,"README.md",["What","Why","How to run"]);r["3.2"]=fl(P,D,["Columns and labels"]);r["3.3"]=fl(P,"LIMITATIONS.md",["Limitation statement"]);r["3.4"]=fl(P,D,["Bias checks"]);
+  r["4.1"]=["seed" in c,"Not detected: add “seed” to config.json"];
+  r["4.2"]=[!!(L&&L.commit&&!L.git_dirty),"Not detected: a run record with a clean git commit (upload runs/)"];
+  r["4.3"]=[!!(L&&L.data_sha256&&L.data_version),"Not detected: run records with a data version and hash"];
+  r["4.4"]=[!!(c.hyperparameters&&Object.keys(c.hyperparameters).length),"Not detected: put hyperparameters in config.json"];
+  r["4.5"]=[!!(L&&(P.runs["runs/"+L.id+"/environment.txt"]||0)>0),"Not detected: environment.txt inside a run folder"];
+  r["4.6"]=[has(P,"metrics.py"),"Not detected: put the metric definition in metrics.py"];
+  r["5.1"]=fl(P,"REPORT.md",["Tuning procedure"]);r["5.2"]=fl(P,"REPORT.md",["Evaluation protocol"]);
+  r["5.3"]=[led.length<=1,"Test set was evaluated "+led.length+" times: report this honestly"];
+  r["5.4"]=[Object.keys(seeds).some(function(k){return Object.keys(seeds[k]).length>=3}),"Not detected: ≥3 seeds of the same config in runs/"];
+  r["5.5"]=fl(P,"REPORT.md",["Negative results and failure cases"]);
+  r["6.1"]=fl(P,D,["Re-identification risk"]);r["6.2"]=fl(P,D,["Sharing plan"]);
+  r["6.4"]=[has(P,"LICENSE","LICENSE.md","LICENSE.txt"),"Not detected: add a LICENSE file"];
+  r["7.1"]=[P.git,"Not detected: no .git folder in the upload"];
+  r["7.2"]=fl(P,D,["Data pointer"]);
+  r["7.3"]=[!!(c.entry_point&&P.paths.indexOf(c.entry_point)>=0),"Not detected: set “entry_point” in config.json to an existing script"];
+  r["7.4"]=[has(P,"requirements.txt","environment.yml","pyproject.toml"),"Not detected: add requirements.txt or environment.yml"];
+  r["7.5"]=r["4.1"];r["7.6"]=fl(P,"LIMITATIONS.md",["Limitation statement"]);
+  r["8.1"]=[/^- \[/m.test(P.text["DECISIONS.md"]||""),"Not detected: log decisions in DECISIONS.md"];
+  return r}
+var MOFD={
+"III.1":function(P){return ptr(P,"MODEL_CARD.md","Architecture")||has(P,"**/model*.py","**/architecture*")},
+"III.2":function(P){return wts(P).some(function(w){return!INTER.test(base(w))})||ptr(P,"MODEL_CARD.md","Model parameters pointer")},
+"III.3":function(P){return has(P,"paper/**/*","docs/**/*.pdf","**/report*.pdf","**/technical*report*")||ptr(P,"MODEL_CARD.md","Research paper",1)||["Tuning procedure","Evaluation protocol","Negative results and failure cases"].every(function(h){return ptr(P,"REPORT.md",h)})},
+"III.4":function(P){return hasDir(P,"results")||ptr(P,"MODEL_CARD.md","Evaluation results")},
+"III.5":function(P){var t=P.text["MODEL_CARD.md"];return t!=null&&t.indexOf("TODO")<0},
+"III.6":function(P){return DATAH.every(function(h){return ptr(P,"DATA_CARD.md",h)})},
+"III.7":function(P){return hasDir(P,"samples","sample_outputs","examples")},
+"II.2":function(P){var c=P.cfg;return has(P,"**/train*.py","training/**/*.py")&&(has(P,"**/split*.py")||"splits" in c||"splits" in(c.data||{}))},
+"II.3":function(P){return has(P,"**/infer*.py","**/predict*.py","**/serve*.py","**/demo*.py","inference/**/*.py")},
+"II.4":function(P){return has(P,"**/eval*.py","**/benchmark*.py","evaluation/**/*.py")},
+"II.5":function(P){return hasDir(P,"eval_data","test_data","evaluation_data")||has(P,"data/test*","data/eval*","data/**/test*","data/**/eval*")||ptr(P,"DATA_CARD.md","Evaluation data")},
+"II.6":function(P){return nel(P,"requirements.txt","environment.yml","Pipfile","pyproject.toml")||has(P,"Dockerfile")},
+"I.2":function(P){return has(P,"paper/**/*","**/paper*.pdf","**/paper*.tex")||ptr(P,"MODEL_CARD.md","Research paper",1)},
+"I.3":function(P){return hasDir(P,"data","datasets")||ptr(P,"DATA_CARD.md","Data pointer",1)},
+"I.4":function(P){return has(P,"**/preprocess*.py","**/prepare*.py","**/data_prep*.py","preprocessing/**/*.py","**/clean*.py")},
+"I.5":function(P){return wts(P).filter(function(w){return INTER.test(base(w))}).length>=2||ptr(P,"MODEL_CARD.md","Intermediate checkpoints pointer")},
+"I.6":function(P){return has(P,"metadata.*","model_metadata.*","**/croissant*.json")}};
+async function mkProj(es){
+  es=es.map(function(e){return{path:e.path.replace(/\\/g,"/").replace(/^(\.\/|\/)+/,""),size:e.size,read:e.read}}).filter(function(e){return e.path&&!/(^|\/)__MACOSX\//.test(e.path)&&base(e.path)!==".DS_Store"});
+  var tops={};es.forEach(function(e){tops[e.path.split("/")[0]]=1});
+  var tk=Object.keys(tops),strip=tk.length===1&&es.every(function(e){return e.path.indexOf("/")>0}),root=strip?tk[0]:"";
+  var P={paths:[],size:{},text:{},runs:{},git:false,recs:[],cfg:{},root:root},rd=[];
+  es.forEach(function(e){
+    var p=strip?e.path.slice(root.length+1):e.path,sg=p.split("/");
+    if(sg[0]===".git"){P.git=true;return}
+    if(sg.some(function(s){return SKIPD[s]}))return;
+    if(sg[0]==="runs"){P.runs[p]=e.size;if(/^runs\/[^/]+\/record\.json$/.test(p)||p==="runs/test_ledger.json")rd.push([p,e]);return}
+    P.paths.push(p);P.size[p]=e.size;
+    if(sg.length===1&&(/\.(md|json|txt|toml|ya?ml)$/i.test(p)||p==="Pipfile")&&e.size<2e6)rd.push([p,e]);
+  });
+  for(var i=0;i<rd.length;i++){var t="";try{t=await rd[i][1].read()}catch(x){}P.text[rd[i][0]]=t}
+  Object.keys(P.text).forEach(function(k){if(/^runs\/[^/]+\/record\.json$/.test(k)){try{P.recs.push(JSON.parse(P.text[k]))}catch(x){}}});
+  P.recs.sort(function(a,b){return String(a.id)<String(b.id)?-1:1});
+  try{P.cfg=JSON.parse(P.text["config.json"]||"{}")}catch(x){}
+  P.ok=P.recs.filter(function(r){return r.status==="ok"});P.latest=P.ok[P.ok.length-1]||null;
+  return P}
+function analyse(P){
+  var auto={},hints={},r=autoChk(P);
+  Object.keys(r).forEach(function(k){if(r[k][0])auto[k]=1;else hints[k]=r[k][1]});
+  MOF.forEach(function(c){c[2].forEach(function(i){var ok=false;try{ok=!!MOFD[i[0]](P)}catch(e){}if(ok)auto[i[0]]=1})});
+  return{when:new Date().toISOString().slice(0,10),name:P.root||"project",nfiles:P.paths.length,auto:auto,hints:hints,docs:!!(P.text["DATA_CARD.md"]||P.text["MODEL_CARD.md"]||P.text["README.md"])}}
+async function zipEntries(file){
+  var n=file.size,tail=Math.min(n,65557),b=new DataView(await file.slice(n-tail).arrayBuffer()),i;
+  for(i=tail-22;i>=0;i--)if(b.getUint32(i,true)===0x06054b50)break;
+  if(i<0)throw new Error("not a zip file");
+  var cnt=b.getUint16(i+10,true),cs=b.getUint32(i+12,true),co=b.getUint32(i+16,true);
+  if(co===0xFFFFFFFF||cnt===0xFFFF)throw new Error("Zip64 archives are not supported; choose the folder instead");
+  var cd=new DataView(await file.slice(co,co+cs).arrayBuffer()),dec=new TextDecoder(),out=[],p=0;
+  while(p+46<=cd.byteLength&&cd.getUint32(p,true)===0x02014b50){
+    var m=cd.getUint16(p+10,true),c=cd.getUint32(p+20,true),u=cd.getUint32(p+24,true),nl=cd.getUint16(p+28,true),el=cd.getUint16(p+30,true),cl=cd.getUint16(p+32,true),lo=cd.getUint32(p+42,true);
+    var name=dec.decode(new Uint8Array(cd.buffer,cd.byteOffset+p+46,nl));p+=46+nl+el+cl;
+    if(name.slice(-1)!=="/")out.push(zent(file,name,m,c,u,lo));
+  }
+  return out}
+function zent(file,name,m,c,u,lo){return{path:name,size:u,read:async function(){
+  var h=new DataView(await file.slice(lo,lo+30).arrayBuffer()),off=lo+30+h.getUint16(26,true)+h.getUint16(28,true),blob=file.slice(off,off+c);
+  if(m===0)return blob.text();
+  if(m===8){if(typeof DecompressionStream==="undefined")throw new Error("this browser cannot unzip; choose the folder instead");return new Response(blob.stream().pipeThrough(new DecompressionStream("deflate-raw"))).text()}
+  throw new Error("unsupported zip compression")}}}
+async function walk(en,pre,out){
+  if(out.length>50000)return;
+  if(en.isFile){await new Promise(function(res){en.file(function(f){out.push({path:pre+en.name,size:f.size,read:function(){return f.text()}});res()},res)})}
+  else if(en.isDirectory){
+    if(en.name===".git"){out.push({path:pre+".git/HEAD",size:0,read:function(){return Promise.resolve("")}});return}
+    if(SKIPD[en.name])return;
+    var rd=en.createReader(),bt;
+    do{bt=await new Promise(function(res,rej){rd.readEntries(res,rej)});for(var k=0;k<bt.length;k++)await walk(bt[k],pre+en.name+"/",out)}while(bt.length)}}
+function renderScan(){
+  var s=S.scan,d=S.doc,el=$("scanres"),dm=$("docmsg");
+  if(!s)el.textContent="No project scanned yet.";
+  else{var ca=0,ct=0,ma=0,mt=0;
+    CHK.forEach(function(c){c[2].forEach(function(i){ct++;if(s.auto[i[0]])ca++})});
+    MOF.forEach(function(c){c[2].forEach(function(i){mt++;if(s.auto[i[0]])ma++})});
+    el.innerHTML="Project <b>"+esc(s.name)+"</b> ("+s.nfiles+" files, "+s.when+"): <b>"+ca+"/"+ct+"</b> checklist items and <b>"+ma+"/"+mt+"</b> components verified automatically. "+(s.docs?"":"No README or card files found. ")+'<button id="clearscan">Clear project</button>';
+    $("clearscan").onclick=function(){S.scan=null;save();render()}}
+  if(!d)dm.textContent="";
+  else{var n=0,t=0;Object.keys(d.sc).forEach(function(k){t++;if(d.sc[k][0]>=1)n++});
+    dm.innerHTML="Document <b>"+esc(d.name)+"</b> ("+d.words+" words, "+d.when+"): <b>"+n+"/"+t+"</b> checklist items and components evidenced in the text. "+'<button id="cleardoc">Clear document</button>';
+    $("cleardoc").onclick=function(){S.doc=null;save();render()}}}
+async function runScan(get){
+  $("scanres").textContent="Scanning…";
+  try{var es=await get();if(!es.length)throw new Error("no files found");S.scan=analyse(await mkProj(es));save();render()}
+  catch(e){$("scanres").textContent="Could not scan: "+e.message}}
+$("pick-dir").onclick=function(){$("in-dir").click()};
+$("pick-zip").onclick=function(){$("in-zip").click()};
+$("in-dir").onchange=function(e){var fs=[].slice.call(e.target.files);runScan(async function(){return fs.map(function(f){return{path:f.webkitRelativePath||f.name,size:f.size,read:function(){return f.text()}}})})};
+$("in-zip").onchange=function(e){var f=e.target.files[0];if(f)runScan(function(){return zipEntries(f)})};
+var dz=$("scan");
+dz.ondragover=function(e){e.preventDefault();dz.classList.add("over")};
+dz.ondragleave=function(){dz.classList.remove("over")};
+dz.ondrop=function(e){e.preventDefault();dz.classList.remove("over");
+  var fl0=e.dataTransfer.files,its=[].slice.call(e.dataTransfer.items||[]).map(function(it){return it.webkitGetAsEntry&&it.webkitGetAsEntry()}).filter(Boolean);
+  if(fl0.length===1&&/\.zip$/i.test(fl0[0].name))runScan(function(){return zipEntries(fl0[0])});
+  else if(fl0.length===1&&its.length&&its[0].isFile)runDoc(async function(){var x=await readDoc(fl0[0]);x.name=fl0[0].name;return x});
+  else if(its.length)runScan(async function(){var out=[];for(var i=0;i<its.length;i++)await walk(its[i],"",out);return out});
+  else $("scanres").textContent="Drop a folder or a .zip file."};
+/* ---------- document review: text-only assessment against MOF classes (in browser) ---------- */
+var AV=/\b(releas(?:e|ed|ing)|available|publicly|open[- ]sourc(?:e|ed)|downloads?|hosted|deposited|archived|accessible)\b|github\.com|gitlab\.com|bitbucket\.org|huggingface\.co|zenodo\.org|figshare\.com|osf\.io|kaggle\.com|doi\.org\/|dataverse|openml\.org|10\.\d{4,9}\//i;
+var BLOCK=/will be (?:made )?(?:publicly )?(?:released|available|open[- ]sourced|shared|published)|to be (?:released|made available)|upon (?:request|acceptance|publication)|(?:on|by) request|coming soon|contact the (?:corresponding )?authors?|not (?:publicly )?(?:available|released|shared)|cannot be (?:shared|released|made)|proprietary|confidential/i;
+var PUBDS=/\b(?:MNIST|Fashion-MNIST|CIFAR-?(?:10|100)|ImageNet|SQuAD|GLUE|SuperGLUE|MS-?COCO|COCO|IMDB|WikiText|Penn Treebank|UCI|OpenML|LibriSpeech|Common Crawl|The Pile|C4|MMLU|GSM8K|HumanEval|Iris|Titanic|MovieLens)\b/;
+function clip(t,i,n){var a=Math.max(0,i-40),b=Math.min(t.length,i+n+60);return(a?"…":"")+t.slice(a,b).replace(/\s+/g," ").trim()+(b<t.length?"…":"")}
+function first(t,re){var r=new RegExp(re.source,re.flags.replace("g","")),m=r.exec(t);return m?{i:m.index,s:m[0],snip:clip(t,m.index,m[0].length)}:null}
+function nearAv(t,re){
+  var g=new RegExp(re.source,re.flags.indexOf("g")<0?re.flags+"g":re.flags),m,n=0,ok=null,blocked=false,any=null;
+  while((m=g.exec(t))&&n<60){n++;
+    var w=t.slice(Math.max(0,m.index-300),m.index+m[0].length+300);
+    if(!any)any={i:m.index,snip:clip(t,m.index,m[0].length)};
+    var b=BLOCK.test(w),a=AV.test(w);if(b)blocked=true;
+    if(a&&!b&&!ok)ok={i:m.index,snip:clip(t,m.index,m[0].length)};
+    if(m[0].length===0)g.lastIndex++}
+  return{n:n,ok:ok,blocked:blocked,any:any}}
+function cnt(t,res){return res.filter(function(r){return r.test(t)}).length}
+function avScore(t,re,pubOk){
+  var r=nearAv(t,re);
+  if(r.ok)return[1,r.ok.snip,"Found with an availability statement or link."];
+  if(pubOk){var p=first(t,PUBDS);if(p)return[1,p.snip,"Named public benchmark ("+p.s+")."]}
+  if(r.n)return[0.5,r.any.snip,r.blocked?"Mentioned, but release is promised, on request or restricted, which does not count as open.":"Mentioned, but no download link or release statement nearby."];
+  return[0,"","Not found in the text."]}
+var SECT=[/\babstract\b/i,/\bintroduction\b/i,/\b(?:related work|background)\b/i,/\b(?:methods?|methodology|approach)\b/,/\b(?:experiments?|experimental setup)\b/,/\b(?:results|evaluation)\b/,/\bdiscussion\b/i,/\bconclusions?\b/i,/\b(?:references|bibliography)\b/i];
+var SECTCAP=/\b(?:Abstract|Introduction|Related Work|Background|Methods?|Methodology|Approach|Experiments?|Experimental Setup|Results|Evaluation|Discussion|Conclusions?|References|Bibliography)\b/g;
+function sections(t){var seen={},m;SECTCAP.lastIndex=0;while((m=SECTCAP.exec(t)))seen[m[0].toLowerCase().replace(/s$/,"")]=1;
+  var up=t.match(/^[ \t]*(?:\d+\.?\s*)?(?:abstract|introduction|related work|background|methods?|methodology|experiments?|results|evaluation|discussion|conclusions?|references|bibliography)[ \t]*$/gim)||[];
+  up.forEach(function(x){seen[x.trim().replace(/^\d+\.?\s*/,"").toLowerCase().replace(/s$/,"")]=1});
+  return Object.keys(seen).length}
+var CODEAV=/\b(?:(?:source |training |our |the )?code|implementation|repositor(?:y|ies)|repo|scripts?|notebooks?)\b|github\.com\/|gitlab\.com\/|bitbucket\.org\//i;
+var DOCS=[
+["III.1","Model Architecture",0,function(t){
+  var g=cnt(t,[/architecture/i,/\blayers?\b|\bdepth\b/i,/transformer|\bcnn\b|convolution|recurrent|\blstm\b|\bgru\b|\bmlp\b|resnet|\bbert\b|\bgpt\b|attention|encoder|decoder|u-?net|random forest|gradient boost|\bsvm\b|logistic regression|linear regression|xgboost|neural network/i,/hidden|embedding|\bheads\b|kernel|\bunits\b|neurons|parameters/i]);
+  var num=first(t,/\b\d+(?:\.\d+)?\s?(?:m|b|k|million|billion|layers?|heads?|units|neurons|parameters|params|dim\w*)\b/i);
+  var f=first(t,/architecture|transformer|neural network|random forest|layers?/i);
+  if(g>=3&&num)return[1,num.snip,"Architecture described with concrete sizes."];
+  if(g>=1)return[0.5,f?f.snip:"","Architecture mentioned, but sizes/structure are not specific."];
+  return[0,"","Not found in the text."]},
+ "Describe the model architecture: model type, number of layers/units, total parameter count and key design choices (a small table or diagram works well).",
+ "Add specifics to the architecture description: layer counts, hidden sizes, total parameters, and a diagram or config file."],
+["III.2","Model Parameters (final checkpoint)",0,function(t){
+  return avScore(t.replace(/intermediate checkpoints?/ig,""),/\b(?:model )?(?:weights|checkpoints?|pre-?trained (?:model|weights)|model parameters|trained models?|safetensors|\.pt|\.pth|\.ckpt|model files?)\b/i)},
+ "Release the final trained weights (e.g. on Hugging Face or Zenodo) and put the link and licence in the document.",
+ "Weights are mentioned but not clearly open: add a direct download link or DOI and state the licence. 'On request' or 'will be released' does not count as open."],
+["III.3","Technical Report or Research Paper",0,function(t){
+  var n=sections(t),w=t.split(/\s+/).length;
+  if((n>=5&&w>=400)||(n>=4&&w>=800))return[1,n+" standard paper sections found in "+w+" words.","The document itself reads as a full report."];
+  if(n>=2||w>=300)return[0.5,n+" paper sections found, "+w+" words.","Some report structure, but not a full technical report."];
+  return[0,"","Does not read as a technical report."]},
+ "This text does not read as a technical report. Write one with Abstract, Introduction, Methods, Results, Discussion/Limitations and References (or link the paper).",
+ "Complete the report structure: add the missing sections (Abstract, Methods, Results, Discussion, References) and enough detail for someone to repeat the work."],
+["III.4","Evaluation Results",0,function(t){
+  var p=first(t,/\b(?:accuracy|f1(?:-score)?|auc|auroc|precision|recall|bleu|rouge|perplexity|rmse|mae|mse|top-?[15]|error rate|exact match|r2)\b[^\n]{0,50}?\d+(?:\.\d+)?\s?%?/i);
+  if(p)return[1,p.snip,"Metric reported with a number."];
+  var m=first(t,/\b(?:accuracy|f1|auc|auroc|precision|recall|bleu|rouge|perplexity|rmse|mae|mse|metric|benchmark|loss)\b/i);
+  if(m)return[0.5,m.snip,"Metrics named, but no clear number tied to them."];
+  return[0,"","No evaluation results found."]},
+ "Report evaluation results: name the metric(s) and give the numbers on the test set (ideally mean ± std over several seeds).",
+ "Tie each metric to a number: add a results table with metric, value, dataset and split."],
+["III.5","Model Card",0,function(t){
+  var c=first(t,/model[- ]cards?/i),h=cnt(t,[/intended use|intended users?/i,/out[- ]of[- ]scope/i,/limitations?/i,/ethical (?:considerations|concerns)|risks?/i,/model details/i,/training data/i,/evaluation (?:data|results)/i,/caveats|recommendations/i]),iu=/intended use|out[- ]of[- ]scope/i.test(t);
+  if(c){var r=nearAv(t,/model[- ]cards?/i);if(r.ok)return[1,r.ok.snip,"Model card referenced with a link."]}
+  if(h>=4&&iu)return[1,h+" model-card topics covered in the text.","Model-card content is present."];
+  if(c)return[0.5,c.snip,"Model card mentioned, but not linked."];
+  if(h>=2)return[0.5,h+" model-card topics found.","Some model-card topics, but intended use / out-of-scope use are missing."];
+  return[0,"","No model card content found."]},
+ "Write a model card (intended use, out-of-scope use, training data, evaluation, limitations, risks) and link it, e.g. a MODEL_CARD.md or Hugging Face card.",
+ "Complete the model card: add intended use, out-of-scope use, limitations and risks, and link it."],
+["III.6","Data Card",0,function(t){
+  var c=first(t,/data ?cards?|datasheets?(?: for datasets)?|dataset cards?/i),
+  g=cnt(t,[/\b(?:collect(?:ed|ion)|sourced?|scraped|crawled|survey)\b/i,/licen[cs]e|terms of use/i,/pre-?process|cleaning|cleaned/i,/\bcolumns?\b|\bfeatures?\b|\blabels?\b|annotation/i,/\bbias(?:es)?\b|fairness|demographic/i,/privacy|re-?identif|consent|anonymi[sz]/i,/inclusion|exclusion|filtered|excluded/i,/\bversion\b|date range|collected (?:in|between|from)|\b(?:19|20)\d\d[-–](?:19|20)\d\d\b/i]);
+  if(c){var r=nearAv(t,/data ?cards?|datasheets?|dataset cards?/i);if(r.ok)return[1,r.ok.snip,"Data card referenced with a link."]}
+  if(g>=6)return[1,g+" of 8 data-documentation topics covered.","Data documentation is present."];
+  if(c)return[0.5,c.snip,"Data card mentioned, but not linked."];
+  if(g>=3)return[0.5,g+" of 8 data-documentation topics covered.","Partial data documentation."];
+  return[0,"","No data documentation found."]},
+ "Write a data card/datasheet: source and collection, date range/version, inclusion/exclusion criteria, licence, preprocessing, columns and labels, bias checks, privacy risk.",
+ "Complete the data card: cover the missing topics (source, version/date range, inclusion criteria, licence, preprocessing, columns/labels, bias checks, privacy)."],
+["III.7","Sample Model Outputs",1,function(t){
+  var f=first(t,/sample outputs?|example outputs?|qualitative (?:examples?|results)|generated (?:samples|examples)|example predictions?|failure cases?|error analysis/i);
+  return f?[1,f.snip,"Examples of outputs found."]:[0,"","No sample outputs found."]},
+ "Optional: include representative outputs, including failure cases.","Optional: include representative outputs, including failure cases."],
+["II.2","Training, Validation and Testing Code",0,function(t){
+  var c=nearAv(t,CODEAV),sp=first(t,/train\/?(?:val(?:idation)?)?\/?test|(?:train|training|validation|test|held-?out|dev)[ -](?:set|split|data)\b|\bsplit\b/i);
+  if(c.ok&&sp)return[1,c.ok.snip,"Code released and data split described."];
+  if(c.ok)return[0.5,c.ok.snip,"Code released, but the train/validation/test split is not described."];
+  if(c.n&&sp)return[0.5,c.any.snip,c.blocked?"Code promised or restricted; not open yet.":"Code mentioned without a link or release statement."];
+  return[0,"","No released training code found."]},
+ "Release training, validation and testing code in a public repository (GitHub/GitLab) and link it; describe how data is split into train/validation/test.",
+ "Link the repository that contains the full training code and the code that creates the splits, and state the split explicitly."],
+["II.3","Inference Code",0,function(t){
+  var i=first(t,/\b(?:inference|predict(?:ion)?\.py|infer\.py|demo|usage|how to use|example usage|quick ?start|from_pretrained|run the model|pip install)\b/i),c=nearAv(t,CODEAV);
+  if(i&&c.ok)return[1,i.snip,"Inference/usage described alongside released code."];
+  if(i||c.ok)return[0.5,(i||c.ok).snip,i?"Usage mentioned, but no released code found.":"Code is linked, but inference code is not mentioned."];
+  return[0,"","No inference code found."]},
+ "Add inference code (predict.py or a notebook) to the repository and show a short usage example for loading the final checkpoint.",
+ "State that the repository includes inference code and show a short usage example (load checkpoint, run on new input)."],
+["II.4","Evaluation Code",0,function(t){
+  var e=first(t,/\b(?:evaluation (?:code|scripts?|harness)|evaluate\.py|eval\.py|reproduc(?:e|ing|tion) (?:the |our |all )?(?:results|experiments|numbers|figures)|benchmark(?:ing)? (?:script|code|harness)|lm-eval)\b/i),c=nearAv(t,CODEAV);
+  if(e&&c.ok)return[1,e.snip,"Evaluation/reproduction code described alongside released code."];
+  if(e||c.ok)return[0.5,(e||c.ok).snip,e?"Evaluation code mentioned, but no released code found.":"Code is linked, but evaluation code is not mentioned."];
+  return[0,"","No evaluation code found."]},
+ "Release evaluation code that regenerates the reported numbers from the checkpoint (evaluate.py) and state the command to run it.",
+ "State that the repository contains the evaluation code and give the command that reproduces the reported numbers."],
+["II.5","Evaluation Data",0,function(t){
+  return avScore(t,/\b(?:test|evaluation|validation|held-?out|benchmark) (?:set|data|dataset|split|corpus)\b|\bbenchmark\b/i,true)},
+ "Release or link the evaluation/test data (or name the public benchmark and its version), with its licence.",
+ "Link the evaluation data directly (URL/DOI) and state its licence; 'on request' does not count as open."],
+["II.6","Supporting Libraries & Tools",0,function(t){
+  var f=first(t,/requirements\.txt|environment\.ya?ml|pip freeze|conda env|pipfile|poetry\.lock|dockerfile|docker image|singularity|uv\.lock/i),
+  pin=t.match(/\b[a-z][\w.-]+==\d+(?:\.\d+)+/g)||[],ver=t.match(/\b(?:pytorch|torch|tensorflow|keras|python|cuda|numpy|scikit-learn|transformers|pandas|scipy|jax)\s?v?\d+\.\d+/gi)||[],
+  lib=first(t,/\b(?:pytorch|torch|tensorflow|keras|jax|scikit-learn|sklearn|numpy|pandas|transformers|xgboost|lightgbm|scipy)\b/i);
+  if(f)return[1,f.snip,"Environment file or container mentioned."];
+  if(pin.length>=2||ver.length>=2)return[1,(pin[0]||ver[0]),"Library versions are pinned."];
+  if(lib||ver.length)return[0.5,lib?lib.snip:ver[0],"Libraries named, but versions are not pinned."];
+  return[0,"","No software environment information found."]},
+ "Pin the software environment with a requirements.txt / environment.yml / Dockerfile (exact versions, e.g. torch==2.1.0) and mention it in the document.",
+ "Pin exact versions (e.g. torch==2.1.0) in a requirements.txt, environment.yml or Dockerfile and say so in the document."],
+["I.2","Research Paper",0,function(t){
+  var n=sections(t),w=t.split(/\s+/).length,ref=first(t,/\b(?:references|bibliography)\b|\[\d+\]|doi\.org|arxiv/i);
+  if(((n>=5&&w>=400)||(n>=4&&w>=800))&&ref)return[1,ref.snip,"Full paper with references."];
+  if(n>=2||w>=300)return[0.5,ref?ref.snip:n+" sections, "+w+" words","Report-like, but a complete paper with references was not found."];
+  return[0,"","No research paper found."]},
+ "Provide the full paper with references (PDF or LaTeX source), ideally as a preprint with a DOI or arXiv ID.",
+ "Make it a complete paper: add the missing sections and a reference list, and publish it as a preprint (arXiv/DOI)."],
+["I.3","Datasets",0,function(t){
+  return avScore(t,/\b(?:datasets?|corpus|corpora|training data|data (?:is|are|was|were))\b/i,true)},
+ "Release the training/validation/test datasets (Zenodo, Hugging Face Datasets, Kaggle...) with a DOI/URL and licence; if they cannot be shared, say why and provide a sample or synthetic set.",
+ "Link the datasets directly (URL/DOI) with their licence; 'on request' does not count as open. If they cannot be shared, provide a sample or synthetic set."],
+["I.4","Data Preprocessing Code",0,function(t){
+  var p=first(t,/\b(?:pre-?process(?:ing)?|data (?:cleaning|preparation|prep)|tokeni[sz](?:ation|er|ed)|normali[sz](?:ation|ed)|augmentation|feature engineering|data pipeline)\b/i),c=nearAv(t,CODEAV);
+  if(p&&c.ok)return[1,p.snip,"Preprocessing described alongside released code."];
+  if(p)return[0.5,p.snip,"Preprocessing described, but no released code found."];
+  return[0,"","No preprocessing information found."]},
+ "Release the preprocessing/cleaning code that turns raw data into the training data and link it from the document.",
+ "Link the preprocessing code (preprocess.py or a notebook) so the training data can be rebuilt from the raw data."],
+["I.5","Model Parameters (intermediate checkpoints)",0,function(t){
+  return avScore(t,/intermediate checkpoints?|checkpoints? (?:saved |released |available )?(?:every|at (?:each|every|regular)|throughout)|training checkpoints|checkpoints? (?:from|during) training|(?:step|epoch)[- ]?\d+ checkpoints?/i)},
+ "Save and release intermediate checkpoints from training (for example every N steps) and link them.",
+ "Link the intermediate checkpoints directly (URL/DOI) with their licence."],
+["I.6","Model Metadata",1,function(t){
+  var f=first(t,/croissant|metadata\.json|model metadata|ml ?metadata|schema\.org|datacite|codemeta|citation\.cff/i);
+  return f?[1,f.snip,"Machine-readable metadata mentioned."]:[0,"","No metadata found."]},
+ "Optional: add machine-readable metadata (e.g. Croissant) for model, data and training.","Optional: add machine-readable metadata (e.g. Croissant) for model, data and training."]
+];
+var DOCGROUP={"III":["III.1","III.2","III.3","III.4","III.5","III.6","III.7"],"II":["II.2","II.3","II.4","II.5","II.6"],"I":["I.2","I.3","I.4","I.5","I.6"]};
+var LICRE=/\b(?:MIT licen[cs]e|MIT|Apache(?:[- ]?2(?:\.0)?)?|BSD(?:[- ]\d)?|GPL(?:v?\d)?|LGPL|AGPL|MPL|CC[- ]BY(?:[- ](?:SA|NC))?(?:[- ]\d\.\d)?|CC0|Creative Commons|OpenRAIL(?:-[A-Z])?|open[- ]licen[cs]e)\b/;
+/* ---- checklist items detected from document text ---- */
+function rx(strong,weak){var A=[].concat(strong);
+  return function(t){
+    if(A.every(function(r){return r.test(t)})){var f=first(t,A[0]);return[1,f?f.snip:"","Found in the text."]}
+    var w=weak&&first(t,weak);if(w)return[0.5,w.snip,"Only weakly indicated in the text."];
+    var a=A.length>1?A.map(function(r){return first(t,r)}).filter(Boolean)[0]:null;
+    if(a)return[0.5,a.snip,"Only partly indicated in the text."];
+    return[0,"","Not found in the text."]}}
+function docScorer(id){var r=null;DOCS.forEach(function(d){if(d[0]===id)r=d[3]});return r}
+var SEED=rx(/seeds?\b[^.\n]{0,40}\d|random[_ ]state\s*=?\s*\d|(?:fixed|set|fix)(?:ed|ting)? (?:the |a )?(?:random )?seeds?/i,/\bseeds?\b|random(?:ly)? (?:init|split)/i);
+var NEG=rx(/negative results?|null results?|did not (?:improve|outperform|help|work|generali[sz]e|replicate)|failure cases?|(?:were unable|failed) to/i,/limitations?|error analysis|future work/i);
+var LIMS=rx(/(?:^|\n)\s*(?:#+\s*)?(?:\d+\.?\s*)?limitations?\b|limitations? (?:of|include|are)|we (?:acknowledge|caution)|a limitation/i,/\blimit(?:ed|ation|ations)\b|caveats?/i);
+function hpScore(t){var g=cnt(t,[/learning rate|\blr\b/i,/batch size/i,/\bepochs?\b/i,/dropout/i,/weight decay/i,/optimi[sz]er|\badam\b|\bsgd\b/i,/\btrees\b|max[_ ]depth|n_estimators/i,/hidden (?:size|dim)/i]),
+  cfg=first(t,/config(?:uration)?(?: files?)?\b|\.ya?ml\b|\.json\b|hydra|argparse|command-line/i),f=first(t,/learning rate|batch size|epochs?|optimi[sz]er|hyperparameter/i);
+  if(g>=2&&cfg)return[1,cfg.snip,"Hyperparameters and a config file are mentioned."];
+  if(g>=1)return[0.5,f?f.snip:"",cfg?"Some hyperparameters listed.":"Hyperparameters listed, but no config file is mentioned."];
+  return[0,"","Not found in the text."]}
+function tuneScore(t){var g=cnt(t,[/grid search|random search|bayesian|optuna|hyperopt|search space|sweep/i,/\bfolds?\b|cross-?validation/i,/\d+\s?(?:trials|configurations|combinations|runs|candidates)|gpu[- ]hours|wall-?clock|\bhours?\b|minutes/i,/hyperparameter (?:search|tuning|optimi[sz]ation)|\btuned\b|\btuning\b/i]),
+  f=first(t,/grid search|random search|cross-?validation|\btuned\b|\btuning\b|hyperparameter/i);
+  if(g>=3)return[1,f?f.snip:"","Tuning procedure is described (method, folds/trials, timing)."];
+  if(g>=1)return[0.5,f?f.snip:"","Tuning is mentioned, but grid size, folds and timing are not all given."];
+  return[0,"","Not found in the text."]}
+var DOCITEMS={
+"1.1":rx(/research question|we (?:ask|investigate|study|examine)(?: whether| how| if)|(?:this|our) (?:work|paper|report|study) (?:asks|investigates|studies|examines)|hypothes[ie]s|aims? to (?:determine|test|answer)/i,/\b(?:aim|goal|objective|purpose)\b/i),
+"1.2":rx(/(?:success|primary|main|target) (?:metric|criterion|criteria)|(?:metrics?|measures?) (?:was|were|is|are) (?:chosen|defined|fixed|decided|specified|selected)|pre-?regist|registered report/i,/\bmetrics?\b/i),
+"1.3":rx(/(?:between|from) (?:19|20)\d\d (?:and|to|–|-) (?:19|20)\d\d|\b(?:population|participants|patients|customers|region|countries|country|geograph\w+)\b/i,/\b(?:19|20)\d\d\b/),
+"1.4":NEG,
+"2.1":rx(/(?:data|dataset|corpus)[^.\n]{0,80}(?:collected|sourced|scraped|crawled|obtained|gathered|downloaded)|(?:collected|sourced|scraped|crawled|obtained|gathered) (?:from|via|using|through)|\bsurvey\b/i,/\b(?:dataset|data source|corpus)\b/i),
+"2.2":rx(/(?:collected|gathered|covers?|spans?) (?:between|from|in|during) [^.\n]{0,25}(?:19|20)\d\d|(?:19|20)\d\d\s?(?:–|-|to)\s?(?:19|20)\d\d|\bversion\s?v?\d+(?:\.\d+)*|\bv\d+\.\d+\b/i,/\bversion\b|\b(?:19|20)\d\d\b/i),
+"2.3":rx(/inclusion (?:criteria|criterion)|exclusion (?:criteria|criterion)|(?:excluded|removed|filtered out|discarded|dropped) [^.\n]{0,60}/i,/\bfilter(?:ed|ing)?\b|\bexclude/i),
+"2.4":rx(/(?:data|dataset)[^.\n]{0,60}licen[cs]e|licen[cs]e[^.\n]{0,40}(?:data|dataset)|terms of (?:use|service)|CC[- ]BY|\bCC0\b/i,/licen[cs]e/i),
+"2.5":rx(/(?:pre-?process\w*|cleaning|tokeni[sz]\w*|normali[sz]\w*)[^.\n]{0,100}(?:\.py\b|script|code|notebook|github|repository)|(?:\.py\b|script|code|notebook)[^.\n]{0,60}(?:pre-?process|cleaning|tokeni[sz])/i,/pre-?process|cleaned|cleaning|tokeni[sz]|normali[sz]/i),
+"3.1":rx(/readme|how to (?:run|reproduce|use|install)|installation|quick ?start|getting started|usage:/i,/github\.com|repository/i),
+"3.2":rx([/\bcolumns?\b|\bfeatures?\b|\bfields?\b|\bvariables?\b/i,/\blabels?\b|\bunits?\b|\bmeaning\b|\bdenotes?\b|\bencoded\b|data dictionary|codebook/i]),
+"3.3":LIMS,
+"3.4":rx(/bias(?:es)? (?:analysis|audit|check|evaluation|assessment|testing)|(?:checked|assessed|evaluated|tested|measured|analy[sz]ed)[^.\n]{0,40}(?:bias|fairness)|subgroup|per-group|demographic parity|equali[sz]ed odds|disparit/i,/\bbias(?:es)?\b|fairness/i),
+"4.1":SEED,
+"4.2":rx(/commit (?:hash|id|sha)?\s*[0-9a-f]{7,}|\b[0-9a-f]{40}\b|git (?:tag|hash|sha)|(?:tag|release) v\d+(?:\.\d+)+|commit[^.\n]{0,40}recorded/i,/\bcommits?\b|version control|\bgit\b|github|gitlab/i),
+"4.3":rx(/checksum|sha-?256|\bmd5\b|dataset version\b[^.\n]{0,20}v?\d|data (?:snapshot|release) v?\d|zenodo\.org|doi\.org\/|\b10\.\d{4,9}\//i,/\bversion(?:ed)?\b[^.\n]{0,20}data|dataset[^.\n]{0,30}version|snapshot/i),
+"4.4":hpScore,
+"4.5":docScorer("II.6"),
+"4.6":rx(/(?:metrics?|accuracy|f1|score)[^.\n]{0,40}(?:is|are) (?:defined|computed|calculated) as|we define[^.\n]{0,60}(?:metric|accuracy|score)|formula|metrics\.py|\\frac|(?:computed|calculated) as/i,/\bmetrics?\b|\baccuracy\b|\bf1\b/i),
+"5.1":tuneScore,
+"5.2":rx(/evaluation protocol|(?:evaluated|evaluate) (?:on|using|with|by)[^.\n]{0,80}(?:test|held-?out|validation|fold)|train\/val(?:idation)?\/test|(?:computed|reported|averaged|measured)[^.\n]{0,40}(?:on the )?(?:test|validation|folds|seeds)/i,/\bevaluat\w+/i),
+"5.3":rx(/test (?:set|data|split)[^.\n]{0,80}(?:only once|a single time|\bonce\b|never (?:used|touched|seen)|not used (?:for|during)|after all (?:decisions|tuning|model selection))|(?:only once|single time)[^.\n]{0,60}test|never (?:used|touched|tuned)[^.\n]{0,40}test/i,/(?:held-?out|hold-?out|separate) test (?:set|data)|test set\b/i),
+"5.4":rx(/±|\bstd\b|standard (?:deviation|error)|confidence interval|95% ci|over \d+ (?:random )?(?:seeds|runs|trials|repetitions)|\d+ (?:random )?seeds|variance across/i,/\bvariance\b|averaged over/i),
+"5.5":NEG,
+"6.1":rx(/re-?identif\w*|de-?identif\w*|anonymi[sz]\w*|pseudonymi[sz]\w*|k-anonymity|differential privacy|privacy (?:risk|assessment|impact)/i,/privacy|personal (?:data|information)|\bPII\b|sensitive/i),
+"6.2":rx(/(?:informed )?consent|ethics (?:committee|board|approval|review)|\bIRB\b|\bGDPR\b|data use agreement|licen[cs]e[^.\n]{0,40}(?:permits?|allows?)|terms of use/i,/licen[cs]e|ethic\w+/i),
+"6.3":rx(/(?:controlled|restricted|gated|tiered) access|access (?:controls?|restrictions?|request|agreement)|data (?:use|sharing) agreement|sharing (?:plan|strategy|policy)|(?:publicly|openly) (?:released|available)[^.\n]{0,80}(?:no|low|without) (?:risk|personal)|anonymi[sz]ed and (?:publicly|openly)/i,/\bshar(?:e|ed|ing)\b|publicly (?:released|available)/i),
+"6.4":rx(/(?:[Cc]ode|[Ss]oftware|[Ss]ource|[Rr]epository)[^.\n]{0,80}\b(?:MIT|Apache|BSD|GPL|LGPL|AGPL|MPL)\b|\b(?:MIT|Apache|BSD|GPL|LGPL|AGPL|MPL)\b[^.\n]{0,40}licen[cs]e/,LICRE),
+"6.5":rx(/(?:redact\w*|anonymi[sz]\w*|pseudonymi[sz]\w*|aggregat\w*|removed|stripped|masked|hashed)[^.\n]{0,80}(?:names?|usernames?|identifiers?|\bids?\b|personal|sensitive|\bPII\b|fields?|emails?|addresses)|synthetic data/i,/anonymi|redact|aggregat|synthetic/i),
+"7.1":rx(/github\.com\/|gitlab\.com\/|bitbucket\.org\//i,/\bgit\b|version control|repository|\brepo\b/i),
+"7.2":docScorer("I.3"),
+"7.3":rx(/(?:single|one) (?:command|script|entry[- ]point)|(?:run|running)\s+`?(?:python3?|make|bash|sh)\s+\S+[^.\n]{0,60}(?:reproduc|results|all (?:experiments|tables|figures))|reproduc\w+ (?:all |the )?(?:results|numbers|tables|figures|experiments)[^.\n]{0,60}(?:run|command|script|make|python)|run_all|reproduce\.(?:sh|py)|make (?:all|reproduce)|entry[- ]point/i,/reproduc\w+/i),
+"7.4":docScorer("II.6"),
+"7.5":SEED,
+"7.6":LIMS,
+"8.1":rx(/decision (?:log|record)s?|DECISIONS\.md|(?:design )?decisions? (?:were|are|was) (?:logged|recorded|documented)|\bADR\b|changelog|lab notebook/i,/\bwe decided\b|\bdecision/i),
+"8.4":rx(/trade-?offs?|(?:we )?(?:chose|opted|prioriti[sz]ed)[^.\n]{0,60}(?:over|instead|because)|(?:due to|because of)[^.\n]{0,40}(?:budget|compute|time|cost)|compute (?:budget|constraints?)/i,/\bconstraints?\b|\bbudget\b/i)
+};
+var DOCFIX={};DOCS.forEach(function(d){DOCFIX[d[0]]=[d[4],d[5]]});
+function assessDoc(text,name,warn){
+  var t=text.replace(/[ \t]+/g," "),sc={};
+  DOCS.forEach(function(d){var r;try{r=d[3](t)}catch(e){r=[0,"","Could not analyse."]}sc[d[0]]=r});
+  Object.keys(DOCITEMS).forEach(function(id){var r;try{r=DOCITEMS[id](t)}catch(e){r=[0,"","Could not analyse."]}sc[id]=r});
+  var lic=first(t,LICRE),notes=[];
+  if(!lic)notes.push("No open licence is named in the text. MOF expects an open licence on every component: e.g. MIT or Apache-2.0 for code, CC-BY-4.0 for data and documents, and an open model licence (Apache-2.0, OpenRAIL) for weights.");
+  if(BLOCK.test(t))notes.push("Phrases like 'available on request', 'will be released' or 'proprietary' appear. For openness classes these count as not open until the artifact is actually downloadable.");
+  notes.push("Checklist items that cannot be read from a document (3.5, 8.2, 8.3, 8.5, 8.6) need your confirmation: tick them in the lists below.");
+  if(warn)notes.push(warn);
+  return{name:name||"document",when:new Date().toISOString().slice(0,10),words:t.split(/\s+/).length,sc:sc,notes:notes,lic:lic?lic[0]:""}}
+/* ---- text extraction from uploaded files ---- */
+function xmlText(x){return x.replace(/<w:tab\/>/g," ").replace(/<\/w:p>/g,"\n").replace(/<[^>]+>/g,"").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&")}
+async function inflate(u8,fmt){var s=new Blob([u8]).stream().pipeThrough(new DecompressionStream(fmt));return new Uint8Array(await new Response(s).arrayBuffer())}
+async function inflateLoose(u8){
+  var e=u8.length;if(u8[e-1]===10){e--;if(u8[e-1]===13)e--}else if(u8[e-1]===13)e--;
+  try{return await inflate(u8.subarray(0,e),"deflate")}catch(x){return await inflate(u8,"deflate")}}
+function a85(s){s=s.replace(/\s/g,"").replace(/^<~/,"");var e=s.indexOf("~>");if(e>=0)s=s.slice(0,e);var out=[],g=[],i;
+  for(i=0;i<s.length;i++){var c=s.charCodeAt(i);if(c===122&&!g.length){out.push(0,0,0,0);continue}g.push(c-33);
+    if(g.length===5){var v=0;for(var k=0;k<5;k++)v=v*85+g[k];out.push((v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255);g=[]}}
+  if(g.length>1){var n=g.length;while(g.length<5)g.push(84);var v2=0;for(var k2=0;k2<5;k2++)v2=v2*85+g[k2];var b=[(v2>>>24)&255,(v2>>>16)&255,(v2>>>8)&255,v2&255];out=out.concat(b.slice(0,n-1))}
+  return new Uint8Array(out)}
+function lat1(u8){var s="",i,CH=32768;for(i=0;i<u8.length;i+=CH)s+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));return s}
+var LIG={11:"ff",12:"fi",13:"fl",14:"ffi",15:"ffl"};
+function pdfRaw(s){var map={n:"\n",r:" ",t:" ",b:"",f:""};
+  return s.replace(/\\([0-7]{1,3}|[\s\S])/g,function(_,e){
+    if(/^[0-7]+$/.test(e))return String.fromCharCode(parseInt(e,8)&255);
+    return e in map?map[e]:e})}
+function hexRaw(h){h=h.replace(/\s/g,"");if(h.length%2)h+="0";var o="",i;for(i=0;i<h.length;i+=2)o+=String.fromCharCode(parseInt(h.substr(i,2),16));return o}
+function plain(raw){return raw.replace(/[\x00-\x08\x0b-\x1f\x7f-\xa0]/g,function(c){return LIG[c.charCodeAt(0)]||(c==="\xa0"?" ":"")})}
+function parseCMap(d){
+  var m={},w=1,cs=/begincodespacerange\s*<([0-9A-Fa-f]+)>/.exec(d),blk,re,x;if(cs)w=cs[1].length/2;
+  function u(h){var o="",i;for(i=0;i<h.length;i+=4)o+=String.fromCharCode(parseInt(h.substr(i,4),16));return o}
+  re=/beginbfchar([\s\S]*?)endbfchar/g;
+  while((blk=re.exec(d))){var p=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;while((x=p.exec(blk[1])))m[parseInt(x[1],16)]=u(x[2])}
+  re=/beginbfrange([\s\S]*?)endbfrange/g;
+  while((blk=re.exec(d))){var q=/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<[0-9A-Fa-f]+>|\[[^\]]*\])/g,y;
+    while((y=q.exec(blk[1]))){var lo=parseInt(y[1],16),hi=parseInt(y[2],16),c,k;
+      if(y[3][0]==="<"){var base=y[3].slice(1,-1),b0=parseInt(base.slice(-4),16),pre=u(base.slice(0,-4));
+        for(c=lo;c<=hi&&c-lo<65536;c++)m[c]=pre+String.fromCharCode(b0+c-lo)}
+      else{var arr=y[3].match(/<[0-9A-Fa-f]+>/g)||[];for(k=0;k<arr.length&&lo+k<=hi;k++)m[lo+k]=u(arr[k].slice(1,-1))}}}
+  return{m:m,w:w}}
+function viaMap(raw,cm){var o="",i,c;
+  if(cm.w===2){for(i=0;i+1<raw.length;i+=2){c=raw.charCodeAt(i)*256+raw.charCodeAt(i+1);o+=cm.m[c]!==undefined?cm.m[c]:""}}
+  else for(i=0;i<raw.length;i++){c=raw.charCodeAt(i);o+=cm.m[c]!==undefined?cm.m[c]:(c>=32&&c<127?raw[i]:"")}
+  return o}
+function pdfContent(s,fm){
+  var out=[],cur=null,m,re=/\/([\w.+-]+)\s+[-\d.]+\s+Tf|\[((?:\\[\s\S]|[^\]\\])*)\]\s*TJ|\(((?:\\[\s\S]|[^\\)])*)\)\s*(?:Tj|'|")|<([0-9A-Fa-f\s]*)>\s*(?:Tj|'|")|\bET\b|([-\d.]+)\s+([-\d.]+)\s+T[dD]\b|T\*|(?:[-\d.]+\s+){5}([-\d.]+)\s+Tm\b/g,lastY=null;
+  function dec(raw){return cur?viaMap(raw,cur):plain(raw)}
+  while((m=re.exec(s))){
+    if(m[1]!==undefined)cur=fm[m[1]]||null;
+    else if(m[2]!==undefined){(m[2].match(/\((?:\\[\s\S]|[^\\)])*\)|<[0-9A-Fa-f\s]*>|-?\d*\.?\d+/g)||[]).forEach(function(p){
+        if(p[0]==="(")out.push(dec(pdfRaw(p.slice(1,-1))));else if(p[0]==="<")out.push(dec(hexRaw(p.slice(1,-1))));else if(parseFloat(p)<-180)out.push(" ")})}
+    else if(m[3]!==undefined)out.push(dec(pdfRaw(m[3])));
+    else if(m[4]!==undefined)out.push(dec(hexRaw(m[4])));
+    else if(m[0]==="ET")out.push("\n");
+    else if(m[6]!==undefined)out.push(Math.abs(parseFloat(m[6]))>0.5?"\n":" ");
+    else if(m[7]!==undefined){var y=parseFloat(m[7]);out.push(lastY===null||Math.abs(y-lastY)>0.5?"\n":" ");lastY=y}
+    else out.push("\n")}
+  return out.join("")}
+async function pdfText(buf){
+  var u8=new Uint8Array(buf),s=lat1(u8),streams=[],re=/stream\r?\n/g,m,n=0;
+  while((m=re.exec(s))&&n<8000){
+    var st=m.index+m[0].length,en=s.indexOf("endstream",st);if(en<0)break;n++;re.lastIndex=en+9;
+    var o=s.lastIndexOf("obj",m.index),dict=s.slice(o<0?Math.max(0,m.index-300):o,m.index),raw=u8.subarray(st,en),
+        nm=/(\d+)\s+\d+\s+$/.exec(s.slice(Math.max(0,o-24),o)),data;
+    if(/\/Subtype\s*\/(?:Image|Form)|\/Type\s*\/(?:XRef|FontDescriptor)|\/Length1|\/FontFile/.test(dict)&&!/ObjStm/.test(dict))continue;
+    try{var b=raw;if(/ASCII85Decode/.test(dict))b=a85(lat1(b));
+      if(/FlateDecode/.test(dict))b=await inflateLoose(b);else if(/\/Filter/.test(dict)&&!/ASCII85Decode/.test(dict))continue;
+      data=lat1(b)}catch(e){continue}
+    streams.push({num:nm?+nm[1]:-1,dict:dict,data:data})}
+  var cm={},bodies=[],pr=/(\d+)\s+0\s+obj\b/g,pm,obj={},tou={},fm={},res=[],uris=[];
+  streams.forEach(function(x){if(x.num>=0&&/begin(?:bfchar|bfrange)/.test(x.data))cm[x.num]=parseCMap(x.data)});
+  while((pm=pr.exec(s))){var e1=pm.index+pm[0].length,seg=s.slice(e1,e1+1500),k=seg.search(/endobj|stream/);bodies.push([+pm[1],k<0?seg:seg.slice(0,k)])}
+  streams.forEach(function(x){if(!/ObjStm/.test(x.dict))return;
+    var N=+((/\/N\s+(\d+)/.exec(x.dict)||[0,0])[1]),F=+((/\/First\s+(\d+)/.exec(x.dict)||[0,0])[1]);
+    if(N&&F){var h=x.data.slice(0,F).trim().split(/\s+/).map(Number);
+      for(var i=0;i<N;i++){var a=F+h[2*i+1],bb=i+1<N?F+h[2*i+3]:x.data.length;bodies.push([h[2*i],x.data.slice(a,bb)])}}});
+  bodies.forEach(function(b){if(!(b[0] in obj))obj[b[0]]=b[1]});
+  Object.keys(obj).forEach(function(key){var t=/\/ToUnicode\s+(\d+)\s+0\s+R/.exec(obj[key]);if(t&&cm[t[1]])tou[key]=cm[t[1]]});
+  bodies.forEach(function(b){var r=/\/Font\s*<<([^>]*)>>|\/Font\s+(\d+)\s+0\s+R/g,x;
+    while((x=r.exec(b[1]))){var body=x[1]!==undefined?x[1]:(obj[x[2]]||""),e=/\/([\w.+-]+)\s+(\d+)\s+0\s+R/g,y;
+      while((y=e.exec(body)))if(!(y[1] in fm)&&tou[y[2]])fm[y[1]]=tou[y[2]]}});
+  streams.forEach(function(x){
+    (x.data.match(/\/URI\s*\([^)]*\)/g)||[]).forEach(function(u){uris.push(u.slice(u.indexOf("(")+1,-1))});
+    if(/\bBT\b/.test(x.data)&&!/begin(?:bfchar|bfrange)/.test(x.data))res.push(pdfContent(x.data,fm))});
+  (s.match(/\/URI\s*\([^)]*\)/g)||[]).forEach(function(u){uris.push(u.slice(u.indexOf("(")+1,-1))});
+  return res.join("\n")+"\n"+uris.join("\n")}
+function reflow(t){
+  var L=t.split(/\r?\n/).map(function(x){return x.replace(/[ \t]+/g," ").trim()}),out=[],i;
+  for(i=0;i<L.length;i++){var a=L[i];if(!a){continue}
+    var keep=a.length<50||/[.!?:]$/.test(a);
+    out.push(a);out.push(keep?"\n":" ")}
+  return out.join("")}
+function textQuality(t){
+  var letters=(t.match(/[A-Za-z]/g)||[]).length,common=(t.match(/\b(?:the|and|of|to|we|is|in|for|that|with)\b/gi)||[]).length;
+  return letters>=300&&common>=15}
+async function readDoc(file){
+  var nm=file.name,ext=(nm.split(".").pop()||"").toLowerCase(),text="",warn="";
+  if(file.size>40e6)throw new Error("file is larger than 40 MB");
+  if(ext==="pdf"){text=await pdfText(await file.arrayBuffer());
+    if(!textQuality(text))throw new Error("could not read text from this PDF (it probably uses embedded fonts or is a scan). Export it as .docx or .txt, or paste the text below.");
+    text=reflow(text);warn="PDF text is extracted approximately; tables and figures are not read."}
+  else if(ext==="docx"){var es=await zipEntries(file),d=es.find(function(e){return e.path==="word/document.xml"});
+    if(!d)throw new Error("not a valid .docx file");text=xmlText(await d.read());
+    var rl=es.find(function(e){return e.path==="word/_rels/document.xml.rels"});
+    if(rl){var rt=await rl.read();text+="\n"+(rt.match(/Target="https?:[^"]+"/g)||[]).map(function(x){return x.slice(8,-1)}).join("\n")}
+  }
+  else if(ext==="ipynb"){var nb=JSON.parse(await file.text());text=(nb.cells||[]).map(function(c){return[].concat(c.source||[]).join("")}).join("\n\n")}
+  else if(ext==="html"||ext==="htm"){text=(await file.text()).replace(/<(script|style)[\s\S]*?<\/\1>/gi,"").replace(/<a [^>]*href="([^"]+)"[^>]*>/gi," $1 ").replace(/<[^>]+>/g," ")}
+  else if(/^(txt|md|markdown|tex|rst|json|csv|log|yaml|yml|toml|bib|cff)$/.test(ext)||!ext||file.type.indexOf("text")===0){text=await file.text()}
+  else throw new Error("unsupported file type (."+ext+"). Use .pdf, .docx, .txt, .md, .tex, .html or .ipynb");
+  if(text.replace(/\s/g,"").length<40)throw new Error("the document has almost no text");
+  return{text:text,warn:warn}}
+/* ---- rendering ---- */
+function chipFor(s){return s>=0.999?'<span class="chip ok">✔ complete</span>':(s>0?'<span class="chip part">◐ '+Math.round(100*s)+'%</span>':'<span class="chip no">✘ not found</span>')}
+async function runDoc(get){
+  $("docmsg").textContent="Reading…";
+  try{var x=await get();S.doc=assessDoc(x.text,x.name,x.warn);S.tab="mof";save();render()}
+  catch(e){$("docmsg").textContent="Could not review: "+e.message}}
+$("doc-pick").onclick=function(){$("in-doc").click()};
+$("in-doc").onchange=function(e){var f=e.target.files[0];if(f)runDoc(async function(){var x=await readDoc(f);x.name=f.name;return x})};
+$("doc-paste-go").onclick=function(){var v=$("doc-paste").value;if(v.replace(/\s/g,"").length<40){$("docmsg").textContent="Paste at least a few sentences.";return}runDoc(async function(){return{text:v,name:"pasted text",warn:""}})};
+applyTheme();render();
+</script>
+</body>
+</html>
